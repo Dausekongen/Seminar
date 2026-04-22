@@ -433,14 +433,14 @@ print("PCA explained variance:", pca.explained_variance_ratio_)
 plt.figure(figsize=(14,6))
 
 # Plot SP500
-plt.plot(df.index, df["SP500_cum"], color="black", linewidth=0.1, label="SP500")
+plt.plot(df.index, df["SP500_raw"], color="black", linewidth=0.1, label="SP500")
 
 # Overlay clusters
 for c in sorted(df["predicted_cluster"].unique()):
     mask = df["predicted_cluster"] == c
     plt.scatter(
         df.index[mask],
-        df["SP500_cum"][mask],
+        df["SP500_raw"][mask],
         label=f"Cluster {int(c)}",
         s=12,
         alpha=0.6

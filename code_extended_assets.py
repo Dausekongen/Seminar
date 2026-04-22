@@ -42,7 +42,7 @@ merged = adj_close.merge(macro, left_index=True, right_index=True, how="left")
 merged = merged.ffill()
 
 monthly = merged.resample("ME").last()
-
+monthly["SP500_raw"] = monthly["SP500"]
 asset_cols = ["SP500", "QQQ", "TLT", "LQD", "Gold", "RealEstate"]
 for col in asset_cols:
     monthly[col + "_ret"] = np.log(monthly[col] / monthly[col].shift(1))

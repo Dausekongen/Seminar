@@ -341,42 +341,7 @@ weights_ext.to_csv("weights_v3.csv")
 weights_base.to_csv("weights_base_v3.csv")
 print("\nSaved: backtest_results_v3.csv, weights_v3.csv, weights_base_v3.csv")
 
-from sklearn.decomposition import PCA
 
-print("\n================ PCA DIAGNOSTIC ================")
-
-# Use extended features (best model)
-X = data_ext[macro_features_extended].dropna()
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Fit PCA → reduce to 2D
-pca = PCA(n_components=2)
-X_pca = pca.fit_transform(X_scaled)
-
-# Fit KMeans again (same k=3)
-kmeans = KMeans(n_clusters=3, random_state=42)
-clusters = kmeans.fit_predict(X_scaled)
-
-# Plot PCA with clusters
-plt.figure(figsize=(8,6))
-scatter = plt.scatter(
-    X_pca[:,0],
-    X_pca[:,1],
-    c=clusters,
-    cmap="viridis",
-    alpha=0.7
-)
-
-plt.title("PCA Projection of Macro Features (Colored by Cluster)")
-plt.xlabel("PC1")
-plt.ylabel("PC2")
-plt.colorbar(scatter, label="Cluster")
-plt.grid(alpha=0.3)
-plt.tight_layout()
-plt.savefig("pca_clusters.png", dpi=150)
-plt.show()
 
 # ===================================================
 # DIAGNOSTICS: PCA + REGIME VISUALIZATION
@@ -395,6 +360,9 @@ df = df.dropna(subset=["predicted_cluster"])
 # ===================================================
 # PCA VISUALIZATION
 # ===================================================
+# ===================================================
+# PCA VISUALIZATION  (with centroids)
+# ===================================================
 X = df[macro_features_extended].dropna()
 
 scaler = StandardScaler()
@@ -406,19 +374,49 @@ X_pca = pca.fit_transform(X_scaled)
 kmeans = KMeans(n_clusters=3, random_state=42)
 clusters = kmeans.fit_predict(X_scaled)
 
-plt.figure(figsize=(8,6))
+# Project centroids into PCA space
+centroids_pca = pca.transform(kmeans.cluster_centers_)
+
+plt.figure(figsize=(8, 6))
 scatter = plt.scatter(
-    X_pca[:,0],
-    X_pca[:,1],
+    X_pca[:, 0],
+    X_pca[:, 1],
     c=clusters,
     cmap="viridis",
-    alpha=0.7
+    alpha=0.7,
+    label="Observations"
 )
 
-plt.title("PCA Projection of Macro Features (Clusters)")
+# Plot centroids
+plt.scatter(
+    centroids_pca[:, 0],
+    centroids_pca[:, 1],
+    c=range(3),
+    cmap="viridis",
+    marker="X",
+    s=250,
+    edgecolors="black",
+    linewidths=1.5,
+    zorder=5,
+    label="Centroids"
+)
+
+# Annotate each centroid with its cluster number
+for i, (cx, cy) in enumerate(centroids_pca):
+    plt.annotate(
+        f"C{i}",
+        xy=(cx, cy),
+        xytext=(6, 6),
+        textcoords="offset points",
+        fontsize=10,
+        fontweight="bold"
+    )
+
+plt.title("PCA Projection of Macro Features (Clusters + Centroids)")
 plt.xlabel("PC1")
 plt.ylabel("PC2")
 plt.colorbar(scatter, label="Cluster")
+plt.legend(loc="upper right")
 plt.grid(alpha=0.3)
 plt.tight_layout()
 plt.savefig("pca_clusters.png", dpi=150)
@@ -440,7 +438,7 @@ for c in sorted(df["predicted_cluster"].unique()):
     mask = df["predicted_cluster"] == c
     plt.scatter(
         df.index[mask],
-        df["SP500_raw"][mask],
+        df["SP500"][mask],
         label=f"Cluster {int(c)}",
         s=12,
         alpha=0.6

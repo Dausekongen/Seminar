@@ -27,12 +27,14 @@ TICKERS = [
     # Defensive sectors
     "XLP", "XLU",
     # Currency
-    "UUP"
+    "UUP",
+    "SLV"
 ]
 
 
 TICKER_RENAME = {
     "SPY": "SP500",
+    "SLV": "silver",
     "QQQ": "QQQ",
     "TLT": "TLT",
     "LQD": "LQD",
@@ -71,7 +73,7 @@ ASSETS = [
     "Commodities", "Energy", "TIPS",
     "HighYield",
     "Staples", "Utilities",
-    "USD"
+    "USD", "silver"
 ]
 
 # ── 1. Asset prices (dividend + split adjusted) ───────────────────────────────

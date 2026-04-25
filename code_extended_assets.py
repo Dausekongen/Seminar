@@ -23,16 +23,22 @@ fred_series = [
     "DGS10",      # 10Y yield
     "T10YIE",     # Inflation expectations
     "INDPRO",     # Industrial production
-    "UNRATE"      # Unemployment
+    "UNRATE",      # Unemployment
+    "DCOILWTICO"  # OLIE
 ]
 
 print("Downloading market data...")
-data = yf.download(tickers, start=start, end=end)
+data = yf.download(tickers, start=start, end=end, auto_adjust=True)
 
 adj_close = data["Close"].copy()
-adj_close.columns = [
-    "SP500", "QQQ", "TLT", "LQD", "Gold", "RealEstate"
-]
+adj_close= adj_close.rename(columns={
+    "SPY": "SP500",
+    "QQQ": "QQQ",
+    "TLT": "TLT",
+    "LQD": "LQD",
+    "GLD": "Gold",
+    "VNQ": "RealEstate"
+})
 
 print("Downloading macro data...")
 macro = pdr.DataReader(fred_series, "fred", start, end)
@@ -58,9 +64,13 @@ monthly["Unemployment"] = monthly["UNRATE"]
 monthly["Unemployment_change"] = monthly["UNRATE"].diff()
 monthly["Infl_exp"] = monthly["T10YIE"]
 
+monthly["Oil"] = monthly["DCOILWTICO"]
+monthly["Oil_ret"] = monthly["Oil"].pct_change()
 
-monthly["SP500_vol"] = monthly["SP500_ret"].rolling(6).std()
-monthly["Bonds_vol"] = monthly["TLT_ret"].rolling(6).std()
+
+
+#monthly["SP500_vol"] = monthly["SP500_ret"].rolling(12).std()
+#monthly["Bonds_vol"] = monthly["TLT_ret"].rolling(12).std()
 
 feature_cols = [
     "Inflation",
@@ -71,8 +81,10 @@ feature_cols = [
     "Unemployment",
     "Unemployment_change",
     "Infl_exp",
-    "SP500_vol",
-    "Bonds_vol"
+    "SP500_ret",
+    "TLT_ret",
+    "Oil",
+    "Oil_ret"
 ]
 
 kmeans_features = [
@@ -83,7 +95,11 @@ kmeans_features = [
     "Rate_level",
     "Unemployment",
     "Unemployment_change",
-    "Infl_exp"
+    "Infl_exp",
+    "Oil",
+    "Oil_ret",
+    "SP500_ret",
+    "TLT_ret",
 ]
 
 final_data = monthly.dropna(subset=feature_cols + [c + "_ret" for c in asset_cols])

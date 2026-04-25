@@ -21,13 +21,15 @@ macro_features_base = [
     "Rate_level",
     "Unemployment",
     "Unemployment_change",
-    "Infl_exp"
+    "Infl_exp",
+    "Oil",
+    "SP500_ret"
 ]
 
 # Add rolling volatility features on top of base macro
 VOL_WINDOW = 12
 vol_feature_names = []
-for col in ["Inflation", "IP_growth", "Yield_curve", "Unemployment_change", "Infl_exp"]:
+for col in ["Inflation", "IP_growth", "Yield_curve", "Unemployment_change", "Infl_exp","Oil_ret","SP500_ret"]:
     new_col = f"{col}_vol{VOL_WINDOW}"
     data[new_col] = data[col].rolling(VOL_WINDOW).std()
     full_kmeans[new_col] = full_kmeans[col].rolling(VOL_WINDOW).std()
@@ -431,7 +433,7 @@ print("PCA explained variance:", pca.explained_variance_ratio_)
 plt.figure(figsize=(14,6))
 
 # Plot SP500
-plt.plot(df.index, df["SP500_raw"], color="black", linewidth=0.1, label="SP500")
+plt.plot(df.index, df["SP500"], color="black", linewidth=0.1, label="SP500")
 
 # Overlay clusters
 for c in sorted(df["predicted_cluster"].unique()):
